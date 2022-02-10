@@ -3,11 +3,10 @@
 #include <string>
 #include <fstream>
 #include <cstdint>
+#include <map>
 #include <filesystem>
 
 using namespace std;
-
-int x=0;
 
 int PrimeNum(const int& count_elems){
 	int prime = 997;/*
@@ -27,18 +26,18 @@ int PrimeNum(const int& count_elems){
 
 class SecondLevel {
 public:
-	SecondLevel(){
-		P = 997;
-	}
-	SecondLevel(int p) {
+	SecondLevel(){}
+	SecondLevel(int p, int count) {
 		P = p;
+		A = rand();
+		B = rand();
+		//count_elems = count * count;
+		//elems.resize(count_elems);
 	}
 	void AddElem(string temp) {
-		if (elems.size() > 1)
+		if (elems.size() >= 1)
 		{
-			count_elems = elems.size()* elems.size();
-			A = rand();
-			B = rand();
+			count_elems = elems.size() * elems.size() + 3;
 			int h=1;
 			for (int i = 0; i < temp.size(); i++)
 			{
@@ -66,6 +65,11 @@ public:
 			
 		}
 	}
+
+	vector<string> GetElems() {
+		return elems;
+	}
+
 private:
 	int A, B, count_elems, P;
 	vector<string> elems;
@@ -84,7 +88,6 @@ public:
 			in >> elem;
 			count_elems++;
 		}
-		cout << count_elems<<endl;
 		in.close();
 		hash_table.resize(count_elems);
 		A = rand();
@@ -92,9 +95,10 @@ public:
 		P = PrimeNum(count_elems);
 		for (int i = 0; i < count_elems; i++)
 		{
-			SecondLevel temp(P);
+			SecondLevel temp(P, count_elems);
 			hash_table[i] = temp;
 		}		
+		TheBestAB(elem, filename);
 		ReadElem(elem, filename);
 	}
 
@@ -126,20 +130,40 @@ private:
 	}
 	
 	void FirstLevelHash(string& elem) {
-		if (x==74)
-		{
-			cout << "!";
-		}
 		int h=1;
 		for (int i = 0; i < elem.size(); i++)
 		{
 			h += A * elem[i] + B;
 		}
 		h = (h % P) % count_elems;
-		x++;
-		//cout << h << " ";
-		cout << x <<" ";
 		hash_table[h].AddElem(elem);		
+	}
+
+	void TheBestAB(string& elem, const string& filename) {
+		map<int, pair<int, int>> list;
+		for (int i = 0; i < 100; i++)
+		{
+			int x=0;
+			hash_table.clear();
+			hash_table.resize(count_elems);
+			A = rand();
+			B = rand();
+			ReadElem(elem, filename);
+			for (int j = 0; j < count_elems; j++)
+			{
+				if (hash_table[j].GetElems().size() == 0)
+				{
+					x++;
+				}
+			}
+			cerr << x << " ";
+			list[x] = make_pair(A, B);
+		}
+		cerr << endl;
+		map<int, pair<int, int>> ::iterator it = list.begin();
+		cerr << it->first << endl;
+		A = it->second.first;
+		B = it->second.second;
 	}
 
 };
