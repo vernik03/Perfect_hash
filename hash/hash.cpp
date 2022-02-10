@@ -7,9 +7,27 @@
 
 using namespace std;
 
+int PrimeNum(const int& count_elems){
+	int prime = 997;/*
+	while ((prime * prime) % 24 != 1)
+	{
+		for (i = 2; i < sqrt(n); i++) {
+			if (n % i == 0) {
+				
+				return 0;
+			}
+		}
+	}*/
+	
+	return prime;
+	
+}
+
 class SecondLevel {
 public:
-	SecondLevel(){}
+	SecondLevel(){
+		P = 997;
+	}
 	SecondLevel(int p) {
 		P = p;
 	}
@@ -22,8 +40,9 @@ public:
 			int h=1;
 			for (int i = 0; i < temp.size(); i++)
 			{
-				h += ((A * temp[i] + B) % P) % count_elems;
+				h += A * temp[i] + B;
 			}
+			h = (h % P) % count_elems;
 			if (h > elems.size())
 			{
 				elems.resize(h+1);				
@@ -67,18 +86,21 @@ public:
 		hash_table.resize(count_elems);
 		A = rand();
 		B = rand();
+		P = PrimeNum(count_elems);
 		for (int i = 0; i < count_elems; i++)
 		{
-			SecondLevel temp = (P);
+			SecondLevel temp(P);
 			hash_table[i] = temp;
-		}
+		}		
 		ReadElem(elem, filename);
 	}
 
 	void PrintTable() {
+		//cout << hash_table.size();
+		
 		for (int i = 0; i < hash_table.size(); i++)
 		{
-			cout << i << ": ";
+			cout << i+1 << ": ";
 			hash_table[i].PrintTable();
 			cout << endl;
 		}
@@ -88,7 +110,7 @@ private:
 	vector<SecondLevel> hash_table;
 	int file_size;
 	int count_elems = 0; //N
-	int A, B, P = 999;
+	int A, B, P;
 
 	void ReadElem(string& elem, const string& filename) {
 		ifstream in(filename);
@@ -103,14 +125,12 @@ private:
 		int h=1;
 		for (int i = 0; i < elem.size(); i++)
 		{
-			h += (((A * elem[i] + B) % P) % count_elems)/10;
+			h += A * elem[i] + B;
 		}
-		if (h > hash_table.size())
-		{
-			hash_table.resize(h + 1);
-		}
-		hash_table[h].AddElem(elem);
-		
+		h = (h % P) % count_elems;
+		cout << h << " ";
+
+		hash_table[h].AddElem(elem);		
 	}
 
 };
