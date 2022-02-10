@@ -4,66 +4,84 @@
 #include <fstream>
 #include <cstdint>
 #include <map>
+#include <string>
 #include <filesystem>
 
 using namespace std;
 
-int PrimeNum(const int& count_elems){
-	int prime = 997;/*
-	while ((prime * prime) % 24 != 1)
-	{
-		for (i = 2; i < sqrt(n); i++) {
-			if (n % i == 0) {
-				
-				return 0;
-			}
+bool PrimeCheck(int primeCandidate) {
+	int maxNum = sqrt(primeCandidate);
+	for (int i = 2; i <= maxNum; i++) {
+		if (primeCandidate % i == 0) {
+			return false;
 		}
-	}*/
-	
-	return prime;
-	
+	}
+	return true;
+}
+int PrimeNum(int biggerThan) {
+	int candidate = biggerThan + 1;
+	while (!PrimeCheck(candidate)) {
+		candidate += 1;
+	}
+	return candidate;
 }
 
 class SecondLevel {
 public:
 	SecondLevel(){}
-	SecondLevel(int p, int count) {
+	SecondLevel(int p) {
 		P = p;
 		A = rand();
 		B = rand();
-		//count_elems = count * count;
-		//elems.resize(count_elems);
 	}
-	void AddElem(string temp) {
-		if (elems.size() >= 1)
-		{
-			count_elems = elems.size() * elems.size() + 3;
-			int h=1;
-			for (int i = 0; i < temp.size(); i++)
-			{
-				h += A * temp[i] + B;
-			}
-			h = (h % P) % count_elems;
-			if (h >= elems.size())
-			{
-				elems.resize(h+1);				
-			}
-			elems[h] = temp;
-		}
-		else
-		{
+	void AddElem(string temp) {		
 			elems.push_back(temp);
-		}		
+	}
+	void HashElems() {
+		if (elems.size() > 0)
+		{
+			vector<string> old_elems;
+			old_elems = elems;
+			count_elems = elems.size() * elems.size();
+			bool ready = false;
+			while (!ready) {
+				elems.clear();
+				elems.resize(count_elems);
+				A = rand();
+				B = rand();
+				int h = 1;
+				for (int j = 0; j < old_elems.size(); j++) {
+					for (int i = 0; i < old_elems[j].size(); i++)
+					{
+						h += A * old_elems[j][i] + B;
+					}
+					h = (h % P) % count_elems;			
+					if ((elems[h] == "") || (elems[h] == old_elems[j])) {
+						elems[h] = old_elems[j];
+						if (j == old_elems.size() - 1) {
+							ready = true;
+						}
+					}
+					else {
+						break;
+					}
+				}
+			}
+		}
 	}
 	void PrintTable() {
 		for (int i = 0; i < elems.size(); i++)
 		{
 			if (elems[i].size()>0)
 			{
-				cout << i << "|" << elems[i] << " ";
+				cout << i+1 << "|" << elems[i] << " ";
 			}
 			
 		}
+	}
+
+	int GetCountElems() {
+		return elems.size();
 	}
 
 	vector<string> GetElems() {
@@ -95,22 +113,38 @@ public:
 		P = PrimeNum(count_elems);
 		for (int i = 0; i < count_elems; i++)
 		{
-			SecondLevel temp(P, count_elems);
+			SecondLevel temp(P);
 			hash_table[i] = temp;
 		}		
 		TheBestAB(elem, filename);
 		ReadElem(elem, filename);
+		for (int i = 0; i < count_elems; i++)
+		{
+			hash_table[i].HashElems();
+		}		
 	}
 
 	void PrintTable() {
-		//cout << hash_table.size();
-		
 		for (int i = 0; i < hash_table.size(); i++)
 		{
 			cout << i+1 << ": ";
 			hash_table[i].PrintTable();
 			cout << endl;
 		}
+	}
+
+	string Find(const string& key) {
+		for (int i = 0; i < count_elems - 1; i++)
+		{
+			for (int j = 0; j < hash_table[i].GetCountElems() - 1; j++)
+			{
+				if (hash_table[i].GetElems()[j] == key)
+				{
+					return "on " + to_string(i+1) + "-" + to_string(j+1);
+				}
+			}
+		}
+		return "not found";
 	}
 
 private:
@@ -141,7 +175,8 @@ private:
 
 	void TheBestAB(string& elem, const string& filename) {
 		map<int, pair<int, int>> list;
-		for (int i = 0; i < 100; i++)
+		int cycles = 200;
+		for (int i = 0; i < cycles; i++)
 		{
 			int x=0;
 			hash_table.clear();
@@ -156,12 +191,13 @@ private:
 					x++;
 				}
 			}
-			cerr << x << " ";
+			cout << i/(cycles/100) << "%\r";
+			//cerr << x << " ";
 			list[x] = make_pair(A, B);
 		}
-		cerr << endl;
+		//cerr << endl;
 		map<int, pair<int, int>> ::iterator it = list.begin();
-		cerr << it->first << endl;
+		//cerr << it->first << endl;
 		A = it->second.first;
 		B = it->second.second;
 	}
@@ -177,4 +213,22 @@ int main()
 {
 	HashTable table;
 	table.PrintTable();
+	cout << endl;
+	cout << "Whant to find element?" << endl;
+	cout << "Y or N: ";
+	char ans;
+	cin >> ans;
+	while (ans == 'Y' || ans == 'y')
+	{
+		string elem;
+		cout << "Enter element: ";
+		cin >> elem;
+		cout << "Your elem " << table.Find(elem) << endl;
+		cout << endl;
+		cout << "Whant to find another element?" << endl;
+		cout << "Y or N: ";
+		cin >> ans;
+	}
+	
 }
+
