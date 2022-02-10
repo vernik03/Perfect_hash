@@ -7,6 +7,8 @@
 
 using namespace std;
 
+int x=0;
+
 int PrimeNum(const int& count_elems){
 	int prime = 997;/*
 	while ((prime * prime) % 24 != 1)
@@ -43,7 +45,7 @@ public:
 				h += A * temp[i] + B;
 			}
 			h = (h % P) % count_elems;
-			if (h > elems.size())
+			if (h >= elems.size())
 			{
 				elems.resize(h+1);				
 			}
@@ -82,6 +84,7 @@ public:
 			in >> elem;
 			count_elems++;
 		}
+		cout << count_elems<<endl;
 		in.close();
 		hash_table.resize(count_elems);
 		A = rand();
@@ -118,18 +121,24 @@ private:
 		{
 			in >> elem;
 			FirstLevelHash(elem);
+			
 		}
 	}
 	
 	void FirstLevelHash(string& elem) {
+		if (x==74)
+		{
+			cout << "!";
+		}
 		int h=1;
 		for (int i = 0; i < elem.size(); i++)
 		{
 			h += A * elem[i] + B;
 		}
 		h = (h % P) % count_elems;
-		cout << h << " ";
-
+		x++;
+		//cout << h << " ";
+		cout << x <<" ";
 		hash_table[h].AddElem(elem);		
 	}
 
