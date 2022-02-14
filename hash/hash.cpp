@@ -31,11 +31,11 @@ public:
 	SecondLevel(){}
 	SecondLevel(int p) {
 		P = p;
-		A = rand();
-		B = rand();
+		A = rand() % (P - 1) + 1;
+		B = rand() % (P - 1) + 1;
 	}
 	void AddElem(string temp) {		
-			elems.push_back(temp);
+		elems.push_back(temp);
 	}
 	void HashElems() {
 		if (elems.size() > 0)
@@ -47,15 +47,14 @@ public:
 			while (!ready) {
 				elems.clear();
 				elems.resize(count_elems);
-				A = rand();
-				B = rand();
-				int h = 1;
+				A = rand() % (P - 1) + 1;
+				B = rand() % (P - 1) + 1;
 				for (int j = 0; j < old_elems.size(); j++) {
+					int h = 1;
 					for (int i = 0; i < old_elems[j].size(); i++)
 					{
-						h += A * old_elems[j][i] + B;
-					}
-					h = (h % P) % count_elems;			
+						h = ((h * A + old_elems[j][i] * B) % P) % count_elems;
+					}			
 					if ((elems[h] == "") || (elems[h] == old_elems[j])) {
 						elems[h] = old_elems[j];
 						if (j == old_elems.size() - 1) {
@@ -99,7 +98,6 @@ class HashTable
 public:
 	HashTable(string filename = "text.txt") {
 		string elem;
-		file_size = filesystem::file_size(filename);
 		ifstream in(filename);
 		while (!in.eof())
 		{
@@ -108,9 +106,9 @@ public:
 		}
 		in.close();
 		hash_table.resize(count_elems);
-		A = rand();
-		B = rand();
 		P = PrimeNum(count_elems);
+		A = rand() % (P - 1) + 1;
+		B = rand() % (P - 1) + 1;		
 		for (int i = 0; i < count_elems; i++)
 		{
 			SecondLevel temp(P);
@@ -149,7 +147,6 @@ public:
 
 private:
 	vector<SecondLevel> hash_table;
-	int file_size;
 	int count_elems = 0; //N
 	int A, B, P;
 
@@ -167,22 +164,21 @@ private:
 		int h=1;
 		for (int i = 0; i < elem.size(); i++)
 		{
-			h += A * elem[i] + B;
+			h = ((h * A + elem[i] * B) % P) % count_elems;
 		}
-		h = (h % P) % count_elems;
 		hash_table[h].AddElem(elem);		
 	}
 
 	void TheBestAB(string& elem, const string& filename) {
 		map<int, pair<int, int>> list;
 		int cycles = 200;
+		hash_table.clear();
+		hash_table.resize(count_elems);
 		for (int i = 0; i < cycles; i++)
 		{
-			int x=0;
-			hash_table.clear();
-			hash_table.resize(count_elems);
-			A = rand();
-			B = rand();
+			int x=0;			
+			A = rand() % (P - 1) + 1;
+			B = rand() % (P - 1) + 1;
 			ReadElem(elem, filename);
 			for (int j = 0; j < count_elems; j++)
 			{
@@ -191,9 +187,14 @@ private:
 					x++;
 				}
 			}
-			cout << i/(cycles/100) << "%\r";
+			if (count_elems>100)
+			{
+				cout << "Loading: " << i / (cycles / 100) << "%\r";
+			}			
 			//cerr << x << " ";
 			list[x] = make_pair(A, B);
+			hash_table.clear();
+			hash_table.resize(count_elems);
 		}
 		//cerr << endl;
 		map<int, pair<int, int>> ::iterator it = list.begin();
@@ -204,10 +205,6 @@ private:
 
 };
 
-//В хэш - функции вида «(A * k + B) % P % N», с возможностью подбора двух коэффициентов A и В :
-//k - хэшкод уникального ключа,
-//P - заранее заданное простое число, большее любого возможного ключа k,+
-//N - размер хеш - таблицы, то есть количество всех ключей.
 
 int main()
 {
